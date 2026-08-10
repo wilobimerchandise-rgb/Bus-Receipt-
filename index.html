@@ -4,8 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CHISCO Bus Ticket Generator</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@700&display=swap'); /* Block font */
+    @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@700&display=swap');
     
     body {
         font-family: 'Courier New', Courier, monospace;
@@ -41,11 +43,11 @@
    .center { text-align: center; }
    .bold { font-weight: bold; }
    .chisco { 
-        font-family: 'Oswald', sans-serif; /* BLOCK FONT */
+        font-family: 'Oswald', sans-serif;
         font-size: 32px; 
         letter-spacing: 3px; 
         font-weight: 700;
-        font-style: italic; /* ITALICS */
+        font-style: italic;
         text-transform: uppercase;
     }
    .row { display: flex; justify-content: space-between; margin: 4px 0; }
@@ -69,12 +71,6 @@
         flex: 1;
     }
    .btn-secondary { background: #444; }
-
-    @media print {
-        body { background: white; padding: 0; }
-       .form, .btn-group { display: none; }
-       .receipt { box-shadow: none; width: 100%; margin: 0 auto; }
-    }
 </style>
 </head>
 <body>
@@ -133,6 +129,7 @@
 </div>
 
 <script>
+    const { jsPDF } = window.jspdf;
     const inputs = ['route','fare','veh','date','time','name','seat'];
     
     function generateRef() {
@@ -183,16 +180,33 @@
         document.getElementById('form').classList.toggle('hidden');
     }
 
-    function downloadPDF() {
+    async function downloadPDF() {
         const newRef = generateRef();
         document.getElementById('ref').innerText = newRef;
         updateTicket();
+        
+        const passengerName = document.getElementById('input-name').value || 'Passenger';
+        const fileName = `bus ticket-${passengerName}.pdf`;
+
         document.getElementById('form').classList.add('hidden');
         
-        setTimeout(() => {
-            window.print(); // This will open print dialog. Choose "Save as PDF"
-            setTimeout(() => document.getElementById('form').classList.remove('hidden'), 500);
-        }, 100);
+        const ticket = document.getElementById('ticket');
+        const canvas = await html2canvas(ticket, { scale: 2 });
+        const imgData = canvas.toDataURL('image/png');
+        
+        const pdf = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: [80, 200] // receipt size
+        });
+        
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+        
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        pdf.save(fileName); // <-- This sets the filename
+        
+        document.getElementById('form').classList.remove('hidden');
     }
 
     setCurrentDateTime();
@@ -201,4 +215,4 @@
 </script>
 
 </body>
-    </html>
+                                                      </html>
