@@ -8,7 +8,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@700&display=swap');
-    
+
     body {
         font-family: 'Courier New', Courier, monospace;
         background: #f0f0f0;
@@ -18,20 +18,24 @@
         padding: 20px;
         gap: 20px;
     }
-   .form {
+  .form {
         width: 300px;
         background: white;
         padding: 15px;
         border-radius: 8px;
         box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-   .form.hidden { display: none; }
-   .form h3 { margin-top: 0; text-align: center; }
-   .form-group { margin-bottom: 10px; }
-   .form-group label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 3px; }
-   .form-group input { width: 100%; padding: 6px; font-size: 12px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+  .form.hidden { display: none; }
+  .form h3 { margin-top: 0; text-align: center; }
+  .form-group { margin-bottom: 10px; }
+  .form-group label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 3px; }
+  .form-group input,.form-group select {
+        width: 100%; padding: 6px; font-size: 12px;
+        border: 1px solid #ccc; border-radius: 4px;
+        box-sizing: border-box; font-family: 'Courier New';
+    }
 
-   .receipt {
+  .receipt {
         width: 300px;
         background: white;
         padding: 10px;
@@ -40,25 +44,25 @@
         line-height: 1.4;
         box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-   .center { text-align: center; }
-   .bold { font-weight: bold; }
-   .chisco { 
+  .center { text-align: center; }
+  .bold { font-weight: bold; }
+  .chisco {
         font-family: 'Oswald', sans-serif;
-        font-size: 32px; 
-        letter-spacing: 3px; 
+        font-size: 32px;
+        letter-spacing: 3px;
         font-weight: 700;
         font-style: italic;
         text-transform: uppercase;
     }
-   .row { display: flex; justify-content: space-between; margin: 4px 0; }
-   .label { font-weight: bold; width: 85px; }
-   .value { flex: 1; }
-   .section { margin: 10px 0; }
-   .divider { border-top: 1px dashed #000; margin: 8px 0; }
-   .note { font-size: 10px; text-align: center; }
+  .row { display: flex; justify-content: space-between; margin: 4px 0; }
+  .label { font-weight: bold; width: 85px; }
+  .value { flex: 1; }
+  .section { margin: 10px 0; }
+  .divider { border-top: 1px dashed #000; margin: 8px 0; }
+  .note { font-size: 10px; text-align: center; }
 
-   .btn-group { display: flex; gap: 10px; width: 300px; }
-   .btn {
+  .btn-group { display: flex; gap: 10px; width: 300px; }
+  .btn {
         background: #000;
         color: #fff;
         border: none;
@@ -70,7 +74,7 @@
         font-weight: bold;
         flex: 1;
     }
-   .btn-secondary { background: #444; }
+  .btn-secondary { background: #444; }
 </style>
 </head>
 <body>
@@ -78,6 +82,23 @@
 <!-- EDITABLE FORM -->
 <div class="form" id="form">
     <h3>Edit Ticket Details</h3>
+
+    <div class="form-group">
+        <label>Select Route</label>
+        <select id="input-route-select" onchange="setRoute()">
+            <option value="">-- Choose Route --</option>
+            <option value="LAG-JIB ==> PHC-M1|LAG-PHC" data-fare="₦45000.00">Lagos Jibowu ==> Port Harcourt M1</option>
+            <option value="LAG-JIB ==> ABJ-UTK|LAG-ABJ" data-fare="₦41000.00">Lagos Jibowu ==> Abuja Utako</option>
+            <option value="LAG-JIB ==> ONI-LPK|LAG-ONI" data-fare="₦35000.00">Lagos Jibowu ==> Onitsha Lagos Park</option>
+            <option value="LAG-JIB ==> OWE-EGB|LAG-OWE" data-fare="₦38000.00">Lagos Jibowu ==> Owerri Egbu Rd</option>
+            <option value="LAG-JIB ==> ENU-OGE|LAG-ENU" data-fare="₦35000.00">Lagos Jibowu ==> Enugu Ogbete</option>
+            <option value="LAG-JIB ==> ABA-MIL|LAG-ABA" data-fare="₦39500.00">Lagos Jibowu ==> Aba Milverton</option>
+            <option value="LAG-JIB ==> ACC-ODA|LAG-ACC" data-fare="₦110000.00">Lagos Jibowu ==> Accra Odaw</option>
+            <option value="PHC-M1 ==> LAG-JIB|PHC-LAG" data-fare="₦45000.00">Port Harcourt M1 ==> Lagos Jibowu</option>
+            <option value="ABJ-UTK ==> LAG-JIB|ABJ-LAG" data-fare="₦41000.00">Abuja Utako ==> Lagos Jibowu</option>
+        </select>
+    </div>
+
     <div class="form-group"><label>Route</label><input type="text" id="input-route" value="PHC-pm ==> Jibowu-pm"></div>
     <div class="form-group"><label>Fare</label><input type="text" id="input-fare" value="₦45000.00"></div>
     <div class="form-group"><label>Vehicle Number</label><input type="text" id="input-veh" value="SMK 183 XN"></div>
@@ -131,30 +152,54 @@
 <script>
     const { jsPDF } = window.jspdf;
     const inputs = ['route','fare','veh','date','time','name','seat'];
-    let currentDateForFile = ''; // store date for filename
-    
+    let currentDateForFile = '';
+    let routeCode = 'CHISCO'; // for REF
+
+    const routes = {
+        "LAG-JIB ==> PHC-M1": "LAG-PHC",
+        "LAG-JIB ==> ABJ-UTK": "LAG-ABJ",
+        "LAG-JIB ==> ONI-LPK": "LAG-ONI",
+        "LAG-JIB ==> OWE-EGB": "LAG-OWE",
+        "LAG-JIB ==> ENU-OGE": "LAG-ENU",
+        "LAG-JIB ==> ABA-MIL": "LAG-ABA",
+        "LAG-JIB ==> ACC-ODA": "LAG-ACC",
+        "PHC-M1 ==> LAG-JIB": "PHC-LAG",
+        "ABJ-UTK ==> LAG-JIB": "ABJ-LAG"
+    };
+
     function generateRef() {
         const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        let result = 'CHISCO-';
-        for(let i = 0; i < 8; i++) {
-            result += chars.charAt(Math.floor(Math.random() * chars.length));
+        let rand = '';
+        for(let i = 0; i < 6; i++) {
+            rand += chars.charAt(Math.floor(Math.random() * chars.length));
         }
-        return result;
+        return `${routeCode}-${rand}`; // e.g LAG-PHC-A1B2C3
+    }
+
+    function setRoute() {
+        const select = document.getElementById('input-route-select');
+        const [routeText, code] = select.value.split('|');
+        if(routeText) {
+            document.getElementById('input-route').value = routeText;
+            document.getElementById('input-fare').value = select.selectedOptions[0].dataset.fare;
+            routeCode = code;
+            updateTicket();
+        }
     }
 
     function setCurrentDateTime() {
         const now = new Date();
         const options = { year: 'numeric', month: 'long', day: 'numeric' };
         const dateStr = now.toLocaleDateString('en-US', options);
-        currentDateForFile = now.toLocaleDateString('en-GB', {day: '2-digit', month: 'short', year: 'numeric'}).replace(/ /g, ''); // 10Aug2026
-        
+        currentDateForFile = now.toLocaleDateString('en-GB', {day: '2-digit', month: 'short', year: 'numeric'}).replace(/ /g, '');
+
         let hours = now.getHours();
         const minutes = now.getMinutes().toString().padStart(2, '0');
-        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const ampm = hours >= 12? 'PM' : 'AM';
         hours = hours % 12;
-        hours = hours ? hours : 12;
+        hours = hours? hours : 12;
         const timeStr = `${hours}:${minutes} ${ampm}`;
-        
+
         document.getElementById('input-date').value = dateStr;
         document.getElementById('input-time').value = timeStr;
     }
@@ -175,6 +220,7 @@
     }
 
     inputs.forEach(key => {
+        if(document.getElementById('input-' + key))
         document.getElementById('input-' + key).addEventListener('input', updateTicket);
     });
 
@@ -187,29 +233,24 @@
         const newRef = generateRef();
         document.getElementById('ref').innerText = newRef;
         updateTicket();
-        
+
         let passengerName = document.getElementById('input-name').value || 'Passenger';
-        passengerName = passengerName.replace(/[^a-zA-Z0-9 ]/g, '').trim(); // remove special chars
+        passengerName = passengerName.replace(/[^a-zA-Z0-9 ]/g, '').trim();
         const fileName = `bus ticket-${passengerName}-${currentDateForFile}.pdf`;
 
         document.getElementById('form').classList.add('hidden');
-        
+
         const ticket = document.getElementById('ticket');
         const canvas = await html2canvas(ticket, { scale: 2, backgroundColor: '#ffffff' });
         const imgData = canvas.toDataURL('image/png');
-        
-        const pdf = new jsPDF({
-            orientation: 'portrait',
-            unit: 'mm',
-            format: [80, 220]
-        });
-        
+
+        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [80, 220] });
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-        
+
         pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-        pdf.save(fileName); // <-- NOW USES NAME + DATE
-        
+        pdf.save(fileName);
+
         document.getElementById('form').classList.remove('hidden');
     }
 
@@ -219,4 +260,4 @@
 </script>
 
 </body>
-        </html>
+                                                                                                        </html>
