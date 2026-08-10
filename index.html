@@ -20,7 +20,6 @@
         padding: 15px;
         border-radius: 8px;
         box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        transition: 0.3s;
     }
    .form.hidden { display: none; }
    .form h3 { margin-top: 0; text-align: center; }
@@ -46,19 +45,19 @@
         font-style: italic;
     }
    .row { display: flex; justify-content: space-between; margin: 4px 0; }
-   .label { font-weight: bold; width: 80px; }
+   .label { font-weight: bold; width: 85px; }
    .value { flex: 1; }
    .section { margin: 10px 0; }
    .divider { border-top: 1px dashed #000; margin: 8px 0; }
    .note { font-size: 10px; text-align: center; }
 
-   .btn-group { display: flex; gap: 10px; }
+   .btn-group { display: flex; gap: 10px; width: 300px; }
    .btn {
         background: #000;
         color: #fff;
         border: none;
-        padding: 12px 20px;
-        font-size: 14px;
+        padding: 12px 10px;
+        font-size: 13px;
         cursor: pointer;
         border-radius: 4px;
         font-family: 'Courier New';
@@ -70,7 +69,7 @@
     @media print {
         body { background: white; padding: 0; }
        .form, .btn-group { display: none; }
-       .receipt { box-shadow: none; width: 100%; }
+       .receipt { box-shadow: none; width: 100%; margin: 0 auto; }
     }
 </style>
 </head>
@@ -79,12 +78,12 @@
 <!-- EDITABLE FORM -->
 <div class="form" id="form">
     <h3>Edit Ticket Details</h3>
-    <div class="form-group"><label>Route</label><input type="text" id="input-route" value="Jibowu-pm ==> Utako--Pm"></div>
+    <div class="form-group"><label>Route</label><input type="text" id="input-route" value="PHC-pm ==> Jibowu-pm"></div>
     <div class="form-group"><label>Fare</label><input type="text" id="input-fare" value="₦40000.00"></div>
     <div class="form-group"><label>Vehicle Number</label><input type="text" id="input-veh" value="SMK 183 XN"></div>
     <div class="form-group"><label>Date</label><input type="text" id="input-date" value="December 31, 2024"></div>
     <div class="form-group"><label>Time</label><input type="text" id="input-time" value="5:00 PM"></div>
-    <div class="form-group"><label>Name</label><input type="text" id="input-name" value="OBINNA PRECIOUS"></div>
+    <div class="form-group"><label>Name</label><input type="text" id="input-name" value="OBIORA UNAMBA"></div>
     <div class="form-group"><label>Seat No</label><input type="text" id="input-seat" value="41"></div>
 </div>
 
@@ -127,7 +126,7 @@
 <!-- BUTTONS -->
 <div class="btn-group">
     <button class="btn btn-secondary" onclick="togglePreview()">Preview</button>
-    <button class="btn" onclick="window.print()">Print Ticket</button>
+    <button class="btn" onclick="printTicket()">Print Ticket</button>
     <button class="btn" onclick="downloadPDF()">Download PDF</button>
 </div>
 
@@ -137,9 +136,13 @@
     function updateTicket() {
         inputs.forEach(key => {
             const val = document.getElementById('input-' + key).value;
-            document.getElementById(key).innerText = val;
-            document.getElementById(key + '2').innerText = val;
-            document.getElementById(key + '3').innerText = val;
+            // Update all 3 places: main ticket, boarding pass, meal voucher
+            const el1 = document.getElementById(key);
+            const el2 = document.getElementById(key + '2');
+            const el3 = document.getElementById(key + '3');
+            if(el1) el1.innerText = val;
+            if(el2) el2.innerText = val;
+            if(el3) el3.innerText = val;
         });
     }
 
@@ -147,20 +150,28 @@
         document.getElementById('input-' + key).addEventListener('input', updateTicket);
     });
 
-    // PREVIEW BUTTON: hide/show form
     function togglePreview() {
+        updateTicket(); // force update before hiding
         document.getElementById('form').classList.toggle('hidden');
     }
 
-    // DOWNLOAD PDF BUTTON: uses browser print to PDF
-    function downloadPDF() {
-        document.getElementById('form').classList.add('hidden'); // hide form for clean pdf
-        window.print(); // User can choose "Save as PDF" in print dialog
-        setTimeout(() => document.getElementById('form').classList.remove('hidden'), 1000); // show form back
+    function printTicket() {
+        updateTicket();
+        window.print();
     }
 
+    function downloadPDF() {
+        updateTicket();
+        document.getElementById('form').classList.add('hidden'); // hide form
+        setTimeout(() => { // delay for mobile to render
+            window.print(); // User chooses "Save as PDF"
+            setTimeout(() => document.getElementById('form').classList.remove('hidden'), 500);
+        }, 100);
+    }
+
+    // Load on start
     updateTicket();
 </script>
 
 </body>
-                                                          </html>
+                                                   </html>
