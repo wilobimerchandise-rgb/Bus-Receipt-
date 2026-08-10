@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CHISCO Bus Ticket</title>
+<style>
+    /* Thermal printer style - 80mm width */
+    body {
+        font-family: 'Courier New', Courier, monospace;
+        background: #f0f0f0;
+        display: flex;
+        justify-content: center;
+        padding: 20px;
+    }
+   .receipt {
+        width: 300px; /* ~80mm thermal paper */
+        background: white;
+        padding: 10px;
+        color: #000;
+        font-size: 12px;
+        line-height: 1.4;
+    }
+   .center { text-align: center; }
+   .bold { font-weight: bold; }
+   .big { font-size: 24px; letter-spacing: 2px; }
+   .row {
+        display: flex;
+        justify-content: space-between;
+        margin: 4px 0;
+    }
+   .label { font-weight: bold; width: 80px; }
+   .value { flex: 1; }
+   .section { margin: 10px 0; }
+   .divider { border-top: 1px dashed #000; margin: 8px 0; }
+   .note { font-size: 10px; text-align: center; }
+
+    /* Print button */
+   .print-btn {
+        position: fixed;
+        bottom: 20px;
+        background: #000;
+        color: #fff;
+        border: none;
+        padding: 12px 24px;
+        font-size: 14px;
+        cursor: pointer;
+        border-radius: 4px;
+    }
+    @media print {
+        body { background: white; padding: 0; }
+       .print-btn { display: none; }
+       .receipt { box-shadow: none; width: 100%; }
+    }
+</style>
+</head>
+<body>
+
+<div class="receipt" id="ticket">
+    <!-- LOGO -->
+    <div class="center big bold">CHISCO</div>
+
+    <div class="center bold section">BUS TICKET</div>
+
+    <!-- DETAILS -->
+    <div class="row">
+        <span class="label">ROUTE:</span>
+        <span class="value" id="route">Jibowu-pm ==> Utako--Pm</span>
+    </div>
+    <div class="row">
+        <span class="label">FARE:</span>
+        <span class="value" id="fare">₦40000.00</span>
+    </div>
+    <div class="row">
+        <span class="label">VEH NO.:</span>
+        <span class="value" id="veh">SMK 183 XN</span>
+    </div>
+    <div class="row">
+        <span class="label">DATE:</span>
+        <span class="value" id="date">December 31, 2024</span>
+    </div>
+    <div class="row">
+        <span class="label">TIME:</span>
+        <span class="value" id="time">5:00 PM</span>
+    </div>
+    <div class="row">
+        <span class="label">REF#:</span>
+        <span class="value" id="ref">JID5CAA8ACTUT</span>
+    </div>
+    <div class="row">
+        <span class="label">NAME:</span>
+        <span class="value" id="name">OBINNA PRECIOUS</span>
+    </div>
+    <div class="row">
+        <span class="label">SEAT NO.:</span>
+        <span class="value" id="seat">41</span>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- NOTE -->
+    <div class="note">
+        Note: Tickets are non refundable after purchase<br>
+        Luggage allowance is 0-8kg only. Kindly transfer excess<br>
+        via logistics unit & enjoy extra 10kg for free<br>
+        For enquires 08000000000/08000000000
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- BOARDING PASS -->
+    <div class="center bold">Boarding Pass</div>
+    <div class="center">REF#: <span id="ref2">JID5CAA8ACTUT</span></div>
+    <div class="row"><span>Seat No</span><span>Passenger</span></div>
+    <div class="row"><span id="seat2">41</span><span id="name2">OBINNA PRECIOUS</span></div>
+    <div class="center section"><span id="route2">Jibowu-pm ==> Utako--Pm</span></div>
+
+    <div class="divider"></div>
+
+    <!-- MEAL VOUCHER -->
+    <div class="center bold">Meal Voucher</div>
+    <div class="center">REF#: <span id="ref3">JID5CAA8ACTUT</span></div>
+    <div class="row"><span>Seat No</span><span>Passenger</span></div>
+    <div class="row"><span id="seat3">41</span><span id="name3">OBINNA PRECIOUS</span></div>
+</div>
+
+<button class="print-btn" onclick="window.print()">Print Ticket</button>
+
+<script>
+    // EDIT DATA HERE - This is your PRD data object
+    const ticketData = {
+        route: "Jibowu-pm ==> Utako--Pm",
+        fare: "₦40000.00",
+        veh: "SMK 183 XN",
+        date: "December 31, 2024",
+        time: "5:00 PM",
+        ref: "JID5CAA8ACTUT",
+        name: "OBINNA PRECIOUS",
+        seat: "41"
+    };
+
+    // Auto fill all fields
+    Object.keys(ticketData).forEach(key => {
+        document.getElementById(key).innerText = ticketData[key];
+        document.getElementById(key + '2').innerText = ticketData[key];
+        document.getElementById(key + '3').innerText = ticketData[key];
+    });
+</script>
+
+</body>
+</html>
