@@ -57,7 +57,7 @@
         color: #fff;
         border: none;
         padding: 12px 10px;
-        font-size: 13px;
+        font-size: 14px;
         cursor: pointer;
         border-radius: 4px;
         font-family: 'Courier New';
@@ -79,10 +79,10 @@
 <div class="form" id="form">
     <h3>Edit Ticket Details</h3>
     <div class="form-group"><label>Route</label><input type="text" id="input-route" value="PHC-pm ==> Jibowu-pm"></div>
-    <div class="form-group"><label>Fare</label><input type="text" id="input-fare" value="₦40000.00"></div>
+    <div class="form-group"><label>Fare</label><input type="text" id="input-fare" value="₦45000.00"></div>
     <div class="form-group"><label>Vehicle Number</label><input type="text" id="input-veh" value="SMK 183 XN"></div>
-    <div class="form-group"><label>Date</label><input type="text" id="input-date" value="December 31, 2024"></div>
-    <div class="form-group"><label>Time</label><input type="text" id="input-time" value="5:00 PM"></div>
+    <div class="form-group"><label>Date</label><input type="text" id="input-date"></div>
+    <div class="form-group"><label>Time</label><input type="text" id="input-time"></div>
     <div class="form-group"><label>Name</label><input type="text" id="input-name" value="OBIORA UNAMBA"></div>
     <div class="form-group"><label>Seat No</label><input type="text" id="input-seat" value="41"></div>
 </div>
@@ -97,7 +97,7 @@
     <div class="row"><span class="label">VEH NO.:</span><span class="value" id="veh"></span></div>
     <div class="row"><span class="label">DATE:</span><span class="value" id="date"></span></div>
     <div class="row"><span class="label">TIME:</span><span class="value" id="time"></span></div>
-    <div class="row"><span class="label">REF#:</span><span class="value" id="ref">JID5CAA8ACTUT</span></div>
+    <div class="row"><span class="label">REF#:</span><span class="value" id="ref"></span></div>
     <div class="row"><span class="label">NAME:</span><span class="value" id="name"></span></div>
     <div class="row"><span class="label">SEAT NO.:</span><span class="value" id="seat"></span></div>
 
@@ -105,20 +105,19 @@
     <div class="note">
         Note: Tickets are non refundable after purchase<br>
         Luggage allowance is 0-8kg only. Kindly transfer excess<br>
-        via logistics unit & enjoy extra 10kg for free<br>
-        For enquires 08000000000/08000000000
+        via logistics unit & enjoy extra 10kg for free
     </div>
     <div class="divider"></div>
 
     <div class="center bold">Boarding Pass</div>
-    <div class="center">REF#: <span id="ref2">JID5CAA8ACTUT</span></div>
+    <div class="center">REF#: <span id="ref2"></span></div>
     <div class="row"><span>Seat No</span><span>Passenger</span></div>
     <div class="row"><span id="seat2"></span><span id="name2"></span></div>
     <div class="center section" id="route2"></div>
 
     <div class="divider"></div>
     <div class="center bold">Meal Voucher</div>
-    <div class="center">REF#: <span id="ref3">JID5CAA8ACTUT</span></div>
+    <div class="center">REF#: <span id="ref3"></span></div>
     <div class="row"><span>Seat No</span><span>Passenger</span></div>
     <div class="row"><span id="seat3"></span><span id="name3"></span></div>
 </div>
@@ -126,17 +125,41 @@
 <!-- BUTTONS -->
 <div class="btn-group">
     <button class="btn btn-secondary" onclick="togglePreview()">Preview</button>
-    <button class="btn" onclick="printTicket()">Print Ticket</button>
     <button class="btn" onclick="downloadPDF()">Download PDF</button>
 </div>
 
 <script>
     const inputs = ['route','fare','veh','date','time','name','seat'];
     
+    // Generate random REF#
+    function generateRef() {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let result = 'CHISCO-';
+        for(let i = 0; i < 8; i++) {
+            result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return result;
+    }
+
+    // Set today's date and time on load
+    function setCurrentDateTime() {
+        const now = new Date();
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        const dateStr = now.toLocaleDateString('en-US', options);
+        let hours = now.getHours();
+        const minutes = now.getMinutes().toString().padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? hours : 12;
+        const timeStr = `${hours}:${minutes} ${ampm}`;
+        
+        document.getElementById('input-date').value = dateStr;
+        document.getElementById('input-time').value = timeStr;
+    }
+
     function updateTicket() {
         inputs.forEach(key => {
             const val = document.getElementById('input-' + key).value;
-            // Update all 3 places: main ticket, boarding pass, meal voucher
             const el1 = document.getElementById(key);
             const el2 = document.getElementById(key + '2');
             const el3 = document.getElementById(key + '3');
@@ -144,6 +167,10 @@
             if(el2) el2.innerText = val;
             if(el3) el3.innerText = val;
         });
+        // Update REF in all 3 places
+        const refVal = document.getElementById('ref').innerText;
+        document.getElementById('ref2').innerText = refVal;
+        document.getElementById('ref3').innerText = refVal;
     }
 
     inputs.forEach(key => {
@@ -151,27 +178,39 @@
     });
 
     function togglePreview() {
-        updateTicket(); // force update before hiding
+        updateTicket();
         document.getElementById('form').classList.toggle('hidden');
     }
 
-    function printTicket() {
-        updateTicket();
-        window.print();
-    }
-
     function downloadPDF() {
+        // Generate new REF for each download
+        const newRef = generateRef();
+        document.getElementById('ref').innerText = newRef;
+        
         updateTicket();
-        document.getElementById('form').classList.add('hidden'); // hide form
-        setTimeout(() => { // delay for mobile to render
-            window.print(); // User chooses "Save as PDF"
-            setTimeout(() => document.getElementById('form').classList.remove('hidden'), 500);
-        }, 100);
+        document.getElementById('form').classList.add('hidden');
+        
+        const printContent = document.getElementById('ticket').innerHTML;
+        const printWindow = window.open('', '', 'height=800,width=400');
+        printWindow.document.write('<html><head><title>CHISCO Ticket</title>');
+        printWindow.document.write('<style>body{font-family:"Courier New";padding:10px;} .center{text-align:center;} .chisco{font-size:28px;font-weight:900;font-style:italic;} .row{display:flex;justify-content:space-between;margin:4px 0;} .label{font-weight:bold;width:85px;} .divider{border-top:1px dashed #000;margin:8px 0;} .note{font-size:10px;text-align:center;}</style>');
+        printWindow.document.write('</head><body>');
+        printWindow.document.write(printContent);
+        printWindow.document.write('</body></html>');
+        printWindow.document.close();
+        
+        setTimeout(() => {
+            printWindow.print();
+            printWindow.close();
+            document.getElementById('form').classList.remove('hidden');
+        }, 250);
     }
 
-    // Load on start
+    // Init
+    setCurrentDateTime();
+    document.getElementById('ref').innerText = generateRef();
     updateTicket();
 </script>
 
 </body>
-                                                   </html>
+        </html>
