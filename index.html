@@ -131,6 +131,7 @@
 <script>
     const { jsPDF } = window.jspdf;
     const inputs = ['route','fare','veh','date','time','name','seat'];
+    let currentDateForFile = ''; // store date for filename
     
     function generateRef() {
         const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -145,6 +146,8 @@
         const now = new Date();
         const options = { year: 'numeric', month: 'long', day: 'numeric' };
         const dateStr = now.toLocaleDateString('en-US', options);
+        currentDateForFile = now.toLocaleDateString('en-GB', {day: '2-digit', month: 'short', year: 'numeric'}).replace(/ /g, ''); // 10Aug2026
+        
         let hours = now.getHours();
         const minutes = now.getMinutes().toString().padStart(2, '0');
         const ampm = hours >= 12 ? 'PM' : 'AM';
@@ -185,26 +188,27 @@
         document.getElementById('ref').innerText = newRef;
         updateTicket();
         
-        const passengerName = document.getElementById('input-name').value || 'Passenger';
-        const fileName = `bus ticket-${passengerName}.pdf`;
+        let passengerName = document.getElementById('input-name').value || 'Passenger';
+        passengerName = passengerName.replace(/[^a-zA-Z0-9 ]/g, '').trim(); // remove special chars
+        const fileName = `bus ticket-${passengerName}-${currentDateForFile}.pdf`;
 
         document.getElementById('form').classList.add('hidden');
         
         const ticket = document.getElementById('ticket');
-        const canvas = await html2canvas(ticket, { scale: 2 });
+        const canvas = await html2canvas(ticket, { scale: 2, backgroundColor: '#ffffff' });
         const imgData = canvas.toDataURL('image/png');
         
         const pdf = new jsPDF({
             orientation: 'portrait',
             unit: 'mm',
-            format: [80, 200] // receipt size
+            format: [80, 220]
         });
         
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
         
         pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-        pdf.save(fileName); // <-- This sets the filename
+        pdf.save(fileName); // <-- NOW USES NAME + DATE
         
         document.getElementById('form').classList.remove('hidden');
     }
@@ -215,4 +219,4 @@
 </script>
 
 </body>
-                                                      </html>
+        </html>
