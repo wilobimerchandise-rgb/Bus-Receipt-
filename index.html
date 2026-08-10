@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CHISCO Bus Ticket Generator</title>
 <style>
+    @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@700&display=swap'); /* Block font */
+    
     body {
         font-family: 'Courier New', Courier, monospace;
         background: #f0f0f0;
@@ -39,10 +41,12 @@
    .center { text-align: center; }
    .bold { font-weight: bold; }
    .chisco { 
-        font-size: 28px; 
-        letter-spacing: 2px; 
-        font-weight: 900;
-        font-style: italic;
+        font-family: 'Oswald', sans-serif; /* BLOCK FONT */
+        font-size: 32px; 
+        letter-spacing: 3px; 
+        font-weight: 700;
+        font-style: italic; /* ITALICS */
+        text-transform: uppercase;
     }
    .row { display: flex; justify-content: space-between; margin: 4px 0; }
    .label { font-weight: bold; width: 85px; }
@@ -131,7 +135,6 @@
 <script>
     const inputs = ['route','fare','veh','date','time','name','seat'];
     
-    // Generate random REF#
     function generateRef() {
         const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
         let result = 'CHISCO-';
@@ -141,7 +144,6 @@
         return result;
     }
 
-    // Set today's date and time on load
     function setCurrentDateTime() {
         const now = new Date();
         const options = { year: 'numeric', month: 'long', day: 'numeric' };
@@ -167,7 +169,6 @@
             if(el2) el2.innerText = val;
             if(el3) el3.innerText = val;
         });
-        // Update REF in all 3 places
         const refVal = document.getElementById('ref').innerText;
         document.getElementById('ref2').innerText = refVal;
         document.getElementById('ref3').innerText = refVal;
@@ -183,34 +184,21 @@
     }
 
     function downloadPDF() {
-        // Generate new REF for each download
         const newRef = generateRef();
         document.getElementById('ref').innerText = newRef;
-        
         updateTicket();
         document.getElementById('form').classList.add('hidden');
         
-        const printContent = document.getElementById('ticket').innerHTML;
-        const printWindow = window.open('', '', 'height=800,width=400');
-        printWindow.document.write('<html><head><title>CHISCO Ticket</title>');
-        printWindow.document.write('<style>body{font-family:"Courier New";padding:10px;} .center{text-align:center;} .chisco{font-size:28px;font-weight:900;font-style:italic;} .row{display:flex;justify-content:space-between;margin:4px 0;} .label{font-weight:bold;width:85px;} .divider{border-top:1px dashed #000;margin:8px 0;} .note{font-size:10px;text-align:center;}</style>');
-        printWindow.document.write('</head><body>');
-        printWindow.document.write(printContent);
-        printWindow.document.write('</body></html>');
-        printWindow.document.close();
-        
         setTimeout(() => {
-            printWindow.print();
-            printWindow.close();
-            document.getElementById('form').classList.remove('hidden');
-        }, 250);
+            window.print(); // This will open print dialog. Choose "Save as PDF"
+            setTimeout(() => document.getElementById('form').classList.remove('hidden'), 500);
+        }, 100);
     }
 
-    // Init
     setCurrentDateTime();
     document.getElementById('ref').innerText = generateRef();
     updateTicket();
 </script>
 
 </body>
-        </html>
+    </html>
