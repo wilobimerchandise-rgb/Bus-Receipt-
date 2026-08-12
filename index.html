@@ -31,58 +31,53 @@
     .form-group { margin-bottom: 10px; }
     .form-group label { display: block; font-size: 11px; margin-bottom: 3px; }
     .form-group input { width: 100%; padding: 6px; font-family: 'Courier New'; text-transform: none; }
-    .btn { width: 100%; padding: 10px; background: #000; color: white; border: none; font-family: 'Anton'; font-size: 16px; cursor: pointer; margin-top: 5px; }
+    .btn { width: 100%; padding: 10px; background: #000; color: white; border: none; font-family: 'Anton'; font-size: 16px; cursor: pointer; }
 
-    /* TICKET DESIGN */
+    /* TICKET DESIGN - EXACT THERMAL RECEIPT */
     .ticket {
-        width: 300px;
+        width: 280px; /* 80mm thermal paper */
         background: white;
-        padding: 10px 15px;
-        font-size: 12px;
-        line-height: 1.4;
+        padding: 8px 12px;
+        font-size: 11px;
+        line-height: 1.3;
         color: #000;
-        border: 1px dashed #ccc;
+        font-weight: 900;
     }
     .ticket-logo {
         font-family: 'Anton', sans-serif;
-        font-size: 42px;
+        font-size: 38px;
         text-align: center;
         font-weight: 900;
-        transform: skewX(-10deg);
-        margin-bottom: 5px;
-        letter-spacing: 2px;
+        transform: skewX(-12deg);
+        margin-bottom: 2px;
+        letter-spacing: 3px;
     }
     .ticket-title {
         text-align: center;
-        font-size: 11px;
-        margin-bottom: 10px;
+        font-size: 10px;
+        margin-bottom: 8px;
+        letter-spacing: 1px;
     }
     .ticket-row {
         display: flex;
         justify-content: space-between;
-        margin-bottom: 4px;
+        margin-bottom: 3px;
     }
-    .ticket-label { width: 40%; font-weight: 900; }
-    .ticket-value { width: 60%; text-align: right; }
-    .divider { border-top: 1px dashed #000; margin: 8px 0; }
+    .ticket-label { width: 35%; }
+    .ticket-value { width: 65%; text-align: right; }
+    .divider { border-top: 1px dashed #000; margin: 6px 0; }
     .ticket-note {
-        font-size: 9px;
+        font-size: 8px;
         text-align: center;
-        line-height: 1.3;
-        margin-top: 10px;
+        line-height: 1.2;
+        margin-top: 8px;
         text-transform: none;
         font-family: Arial, sans-serif;
         font-weight: 400;
+        padding: 0 5px;
     }
     .hidden { display: none; }
-    .no-print { } /* will be hidden in pdf */
-
-    @media print {
-        body * { visibility: hidden; }
-        .ticket, .ticket * { visibility: visible; }
-        .ticket { position: absolute; left: 0; top: 0; border: none; box-shadow: none; }
-        .no-print { display: none !important; }
-    }
+    .no-print { }
 </style>
 </head>
 <body>
@@ -132,10 +127,8 @@
 
     <div class="divider"></div>
 
-    <!-- THESE BUTTONS WILL NOT SHOW IN PDF -->
     <div class="no-print">
         <button class="btn" onclick="window.print()">PRINT TICKET</button>
-        <button class="btn" style="background:#666" onclick="downloadPDF()">DOWNLOAD PDF</button>
     </div>
 </div>
 
@@ -156,7 +149,7 @@ function formatTime(timeStr){
 
 async function generateTicket(){
     document.getElementById('t_route').innerText = document.getElementById('route').value.toUpperCase();
-    document.getElementById('t_fare').innerText = '₦' + parseFloat(document.getElementById('fare').value).toLocaleString() + '.00';
+    document.getElementById('t_fare').innerText = '₦' + parseFloat(document.getElementById('fare').value).toLocaleString('en-NG', {minimumFractionDigits: 2}) ;
     document.getElementById('t_veh').innerText = document.getElementById('veh').value.toUpperCase();
     document.getElementById('t_date').innerText = formatDate(document.getElementById('date').value);
     document.getElementById('t_time').innerText = formatTime(document.getElementById('time').value);
@@ -168,7 +161,6 @@ async function generateTicket(){
     document.getElementById('inputForm').classList.add('hidden');
     document.getElementById('ticket').classList.remove('hidden');
 
-    // Auto download PDF after 300ms so DOM updates
     setTimeout(() => { downloadPDF(); }, 300);
 }
 
@@ -176,24 +168,21 @@ async function downloadPDF(){
     const { jsPDF } = window.jspdf;
     const ticket = document.getElementById('ticket');
     
-    // Temporarily hide buttons for capture
     const noPrintElements = ticket.querySelectorAll('.no-print');
     noPrintElements.forEach(el => el.style.display = 'none');
 
-    const canvas = await html2canvas(ticket, {scale: 2, backgroundColor: '#ffffff'});
+    const canvas = await html2canvas(ticket, {scale: 3, backgroundColor: '#ffffff'});
     const imgData = canvas.toDataURL('image/png');
-    const pdf = new jsPDF({orientation: 'portrait', unit: 'mm', format: [80, 200]});
-    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdf = new jsPDF({orientation: 'portrait', unit: 'mm', format: [80, 297]});
+    const pdfWidth = 80;
     const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
     
-    // Filename: CHISCO TICKET (PASSENGER NAME).pdf
     let passengerName = document.getElementById('name').value.toUpperCase().trim();
     let fileName = `CHISCO TICKET (${passengerName}).pdf`;
     
     pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
     pdf.save(fileName);
 
-    // Show buttons again after capture
     noPrintElements.forEach(el => el.style.display = 'block');
 }
 </script>
