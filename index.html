@@ -31,7 +31,7 @@
     .form-group { margin-bottom: 10px; }
     .form-group label { display: block; font-size: 11px; margin-bottom: 3px; }
     .form-group input { width: 100%; padding: 6px; font-family: 'Courier New'; text-transform: none; }
-    .btn { width: 100%; padding: 10px; background: #000; color: white; border: none; font-family: 'Anton'; font-size: 16px; cursor: pointer; }
+    .btn { width: 100%; padding: 10px; background: #000; color: white; border: none; font-family: 'Anton'; font-size: 16px; cursor: pointer; margin-top: 5px; }
 
     /* TICKET DESIGN */
     .ticket {
@@ -75,11 +75,13 @@
         font-weight: 400;
     }
     .hidden { display: none; }
+    .no-print { } /* will be hidden in pdf */
 
     @media print {
         body * { visibility: hidden; }
         .ticket, .ticket * { visibility: visible; }
         .ticket { position: absolute; left: 0; top: 0; border: none; box-shadow: none; }
+        .no-print { display: none !important; }
     }
 </style>
 </head>
@@ -87,8 +89,8 @@
 
 <div class="form" id="inputForm">
     <h3>Generate CHISCO Ticket</h3>
-    <div class="form-group"><label>Route</label><input id="route" value="Mile 1----pm ==> Jibowu--am"></div>
-    <div class="form-group"><label>Fare</label><input id="fare" value="35000.00"></div>
+    <div class="form-group"><label>Route</label><input id="route" value="Mile 1----PM ==> JIBOWU--AM"></div>
+    <div class="form-group"><label>Fare</label><input id="fare" value="45000.00"></div>
     <div class="form-group"><label>Veh No</label><input id="veh" value="AGU 443 XB"></div>
     <div class="form-group"><label>Date</label><input id="date" type="date"></div>
     <div class="form-group"><label>Time</label><input id="time" type="time"></div>
@@ -96,7 +98,7 @@
     <div class="form-group"><label>Name</label><input id="name" value="OBIORA"></div>
     <div class="form-group"><label>Seat No</label><input id="seat" value="31"></div>
     <div class="form-group"><label>Luggage</label><input id="luggage" value="0.00"></div>
-    <button class="btn" onclick="generateTicket()">GENERATE TICKET</button>
+    <button class="btn" onclick="generateTicket()">GENERATE & DOWNLOAD TICKET</button>
 </div>
 
 <div class="ticket hidden" id="ticket">
@@ -130,8 +132,11 @@
 
     <div class="divider"></div>
 
-    <button class="btn" onclick="window.print()">PRINT TICKET</button>
-    <button class="btn" style="background:#666; margin-top:5px" onclick="downloadPDF()">DOWNLOAD PDF</button>
+    <!-- THESE BUTTONS WILL NOT SHOW IN PDF -->
+    <div class="no-print">
+        <button class="btn" onclick="window.print()">PRINT TICKET</button>
+        <button class="btn" style="background:#666" onclick="downloadPDF()">DOWNLOAD PDF</button>
+    </div>
 </div>
 
 <script>
@@ -140,7 +145,7 @@ document.getElementById('time').value = "17:00";
 
 function formatDate(dateStr){
     const d = new Date(dateStr);
-    return d.toLocaleDateString('en-US', {year:'numeric', month:'long', day:'numeric'});
+    return d.toLocaleDateString('en-US', {year:'numeric', month:'long', day:'numeric'}).toUpperCase();
 }
 function formatTime(timeStr){
     const [h, m] = timeStr.split(':');
@@ -149,32 +154,48 @@ function formatTime(timeStr){
     return `${hour}:${m} ${ampm}`;
 }
 
-function generateTicket(){
-    document.getElementById('t_route').innerText = document.getElementById('route').value;
+async function generateTicket(){
+    document.getElementById('t_route').innerText = document.getElementById('route').value.toUpperCase();
     document.getElementById('t_fare').innerText = '₦' + parseFloat(document.getElementById('fare').value).toLocaleString() + '.00';
-    document.getElementById('t_veh').innerText = document.getElementById('veh').value;
+    document.getElementById('t_veh').innerText = document.getElementById('veh').value.toUpperCase();
     document.getElementById('t_date').innerText = formatDate(document.getElementById('date').value);
     document.getElementById('t_time').innerText = formatTime(document.getElementById('time').value);
-    document.getElementById('t_ref').innerText = document.getElementById('ref').value;
-    document.getElementById('t_name').innerText = document.getElementById('name').value;
+    document.getElementById('t_ref').innerText = document.getElementById('ref').value.toUpperCase();
+    document.getElementById('t_name').innerText = document.getElementById('name').value.toUpperCase();
     document.getElementById('t_seat').innerText = document.getElementById('seat').value;
     document.getElementById('t_luggage').innerText = parseFloat(document.getElementById('luggage').value).toFixed(2);
 
     document.getElementById('inputForm').classList.add('hidden');
     document.getElementById('ticket').classList.remove('hidden');
+
+    // Auto download PDF after 300ms so DOM updates
+    setTimeout(() => { downloadPDF(); }, 300);
 }
 
 async function downloadPDF(){
     const { jsPDF } = window.jspdf;
     const ticket = document.getElementById('ticket');
-    const canvas = await html2canvas(ticket, {scale: 2});
+    
+    // Temporarily hide buttons for capture
+    const noPrintElements = ticket.querySelectorAll('.no-print');
+    noPrintElements.forEach(el => el.style.display = 'none');
+
+    const canvas = await html2canvas(ticket, {scale: 2, backgroundColor: '#ffffff'});
     const imgData = canvas.toDataURL('image/png');
     const pdf = new jsPDF({orientation: 'portrait', unit: 'mm', format: [80, 200]});
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+    
+    // Filename: CHISCO TICKET (PASSENGER NAME).pdf
+    let passengerName = document.getElementById('name').value.toUpperCase().trim();
+    let fileName = `CHISCO TICKET (${passengerName}).pdf`;
+    
     pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-    pdf.save('CHISCO-TICKET.pdf');
+    pdf.save(fileName);
+
+    // Show buttons again after capture
+    noPrintElements.forEach(el => el.style.display = 'block');
 }
 </script>
 </body>
-                                                                                                                 </html>
+    </html>
